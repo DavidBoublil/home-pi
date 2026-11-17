@@ -21,6 +21,5 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get upgrade -y
 
-apt-get install -y docker.io docker-compose-plugin
-
+apt-get install -y docker.io docker-compose
 usermod -aG docker "$1"
