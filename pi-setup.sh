@@ -18,17 +18,20 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 
-# Register repositories
+# Installations
+apt-get update
+apt-get install -y curl gpg
+
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor --yes -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list > /dev/null
 
-# instalations
 apt-get update
 apt-get upgrade -y
 apt-get install -y caddy
-
+apt-get install -y qbittorrent-nox
 apt-get install -y docker.io docker-compose
 usermod -aG docker "$1"
+
 
 # caddy 
 if [ -d "./caddy/html" ]; then
@@ -45,4 +48,16 @@ else
     echo "Warning: ./caddy/Caddyfile not found. Skipping Caddyfile copy." >&2
 fi
 
+
+# qbitorrent
+if [ -f "./qbitorrent/qBittorrent.conf" ]; then
+    systemctl stop "qbittorrent-nox@$1" 2>/dev/null || true
+    mkdir -p "/home/$1/.config/qBittorrent"
+    cp ./qbitorrent/qBittorrent.conf "/home/$1/.config/qBittorrent/qBittorrent.conf"
+    chown -R "$1:$1" "/home/$1/.config/qBittorrent"
+else
+    echo "Warning: ./qbitorrent/qBittorrent.conf not found. Skipping config copy." >&2
+fi
+
 systemctl enable --now caddy
+systemctl enable --now "qbittorrent-nox@$1"
