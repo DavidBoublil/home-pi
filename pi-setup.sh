@@ -32,6 +32,7 @@ apt-get install -y caddy
 apt-get install -y qbittorrent-nox
 apt-get install -y docker.io docker-compose
 usermod -aG docker "$1"
+apt-get install -y cockpit
 
 
 # Mount drive, hardcoded meni_drive david_drive, they are hardcoded in qbitorrent config to
@@ -102,7 +103,16 @@ fi
 systemctl enable --now caddy
 systemctl enable --now "qbittorrent-nox@$1"
 
-# docker images
+# cockpit
+mkdir -p /etc/cockpit
+cat <<EOF > /etc/cockpit/cockpit.conf
+[WebService]
+AllowUnencrypted = true
+EOF
+
+systemctl enable --now cockpit.socket
+systemctl try-restart cockpit.service
+
 # docker images
 DOCKER_DATA="/opt/docker"
 mkdir -p "$DOCKER_DATA/filebrowser/database" "$DOCKER_DATA/filebrowser/config"
