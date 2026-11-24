@@ -95,3 +95,8 @@ fi
 systemctl enable --now caddy
 systemctl enable --now "qbittorrent-nox@$1"
 
+# docker images
+mkdir -p ./docker/filebrowser/database ./docker/filebrowser/config
+chown -R "$1:$1" ./docker/filebrowser
+
+PUID=$(id -u "$1") PGID=$(id -g "$1") USER_HOME=$(getent passwd "$1" | cut -d: -f6) docker compose -f ./docker/docker-compose.yaml up -d
