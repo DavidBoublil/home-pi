@@ -31,18 +31,38 @@ apt-get install -y caddy
 apt-get install -y qbittorrent-nox
 apt-get install -y docker.io docker-compose
 usermod -aG docker "$1"
+apt-get install -y nfs-kernel-server
 
 
 # Mount drive, hardcoded meni_drive david_drive, they are hardcoded in qbitorrent config to
+FSTAB_CHANGED=0
+
 for label in meni_drive david_drive; do
-    mkdir -p "/mnt/$label"
+    if ! mountpoint -q "/mnt/$label"; then
+        mkdir -p "/mnt/$label"
+        chattr +i "/mnt/$label"
+    fi
+
     if ! grep -q "LABEL=$label" /etc/fstab; then
         echo "LABEL=$label  /mnt/$label  ext4  defaults,nofail,noatime,x-systemd.automount,x-systemd.device-timeout=10  0  2" >> /etc/fstab
+        FSTAB_CHANGED=1
     fi
 done
 
-systemctl daemon-reload
-mount -a
+if [[ $FSTAB_CHANGED -eq 1 ]]; then
+    systemctl daemon-reload
+    mount -a
+fi
+
+# Share drives via NFS
+for label in meni_drive david_drive; do
+    if ! grep -q "^/mnt/$label " /etc/exports 2>/dev/null; then
+        echo "/mnt/$label  *(rw,async,no_subtree_check,insecure)" >> /etc/exports
+    fi
+done
+
+exportfs -ra
+systemctl enable --now nfs-kernel-server
 
 # caddy 
 if [ -d "./caddy/html" ]; then
@@ -54,7 +74,7 @@ fi
 
 if [ -f "./caddy/Caddyfile" ]; then
     cp ./caddy/Caddyfile /etc/caddy/Caddyfile
-    systemctl reload caddy
+    systemctl reload-or-restart caddy
 else
     echo "Warning: ./caddy/Caddyfile not found. Skipping Caddyfile copy." >&2
 fi
