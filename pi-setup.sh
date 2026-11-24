@@ -54,6 +54,13 @@ if [[ $FSTAB_CHANGED -eq 1 ]]; then
     mount -a
 fi
 
+for label in meni_drive david_drive; do
+    ls "/mnt/$label" &>/dev/null || true
+    if mountpoint -q "/mnt/$label"; then
+        chown "$1:$1" "/mnt/$label"
+    fi
+done
+
 # Share drives via NFS
 fsid=1
 for label in meni_drive david_drive; do
@@ -96,7 +103,9 @@ systemctl enable --now caddy
 systemctl enable --now "qbittorrent-nox@$1"
 
 # docker images
-mkdir -p ./docker/filebrowser/database ./docker/filebrowser/config
-chown -R "$1:$1" ./docker/filebrowser
+# docker images
+DOCKER_DATA="/opt/docker"
+mkdir -p "$DOCKER_DATA/filebrowser/database" "$DOCKER_DATA/filebrowser/config"
+chown -R "$1:$1" "$DOCKER_DATA"
 
 PUID=$(id -u "$1") PGID=$(id -g "$1") USER_HOME=$(getent passwd "$1" | cut -d: -f6) docker compose -f ./docker/docker-compose.yaml up -d

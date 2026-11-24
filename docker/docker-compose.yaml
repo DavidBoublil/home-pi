@@ -3,12 +3,14 @@ services:
     image: filebrowser/filebrowser:latest
     container_name: filebrowser
     user: "${PUID}:${PGID}"
+    environment:
+      - FB_NOAUTH=true
     ports:
       - "8080:80"
     volumes:
       - /mnt/meni_drive:/srv/meni_drive
       - /mnt/david_drive:/srv/david_drive
       - ${USER_HOME}:/srv/home
-      - ./filebrowser/database:/database
-      - ./filebrowser/config:/config
+      - /opt/docker/filebrowser/database:/database
+      - /opt/docker/filebrowser/config:/config
     restart: unless-stopped
