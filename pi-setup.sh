@@ -115,7 +115,7 @@ systemctl try-restart cockpit.service
 
 # docker images
 DOCKER_DATA="/opt/docker"
-mkdir -p "$DOCKER_DATA/filebrowser/database" "$DOCKER_DATA/filebrowser/config"
+mkdir -p "$DOCKER_DATA/filebrowser/database" "$DOCKER_DATA/filebrowser/config" "$DOCKER_DATA/portainer"
 chown -R "$1:$1" "$DOCKER_DATA"
 
 PUID=$(id -u "$1") PGID=$(id -g "$1") USER_HOME=$(getent passwd "$1" | cut -d: -f6) docker compose -f ./docker/docker-compose.yaml up -d
