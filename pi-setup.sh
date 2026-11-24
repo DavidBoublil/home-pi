@@ -33,6 +33,17 @@ apt-get install -y docker.io docker-compose
 usermod -aG docker "$1"
 
 
+# Mount drive, hardcoded meni_drive david_drive, they are hardcoded in qbitorrent config to
+for label in meni_drive david_drive; do
+    mkdir -p "/mnt/$label"
+    if ! grep -q "LABEL=$label" /etc/fstab; then
+        echo "LABEL=$label  /mnt/$label  ext4  defaults,nofail,noatime,x-systemd.automount,x-systemd.device-timeout=10  0  2" >> /etc/fstab
+    fi
+done
+
+systemctl daemon-reload
+mount -a
+
 # caddy 
 if [ -d "./caddy/html" ]; then
     mkdir -p /var/www/html
@@ -61,3 +72,4 @@ fi
 
 systemctl enable --now caddy
 systemctl enable --now "qbittorrent-nox@$1"
+
