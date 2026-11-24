@@ -26,12 +26,12 @@ curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmo
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list > /dev/null
 
 apt-get update
+apt-get install -y --install-recommends nfs-kernel-server
 apt-get upgrade -y
 apt-get install -y caddy
 apt-get install -y qbittorrent-nox
 apt-get install -y docker.io docker-compose
 usermod -aG docker "$1"
-apt-get install -y nfs-kernel-server
 
 
 # Mount drive, hardcoded meni_drive david_drive, they are hardcoded in qbitorrent config to
@@ -55,10 +55,12 @@ if [[ $FSTAB_CHANGED -eq 1 ]]; then
 fi
 
 # Share drives via NFS
+fsid=1
 for label in meni_drive david_drive; do
     if ! grep -q "^/mnt/$label " /etc/exports 2>/dev/null; then
-        echo "/mnt/$label  *(rw,async,no_subtree_check,insecure)" >> /etc/exports
+        echo "/mnt/$label  *(rw,async,no_subtree_check,insecure,fsid=$fsid)" >> /etc/exports
     fi
+    ((fsid++))
 done
 
 exportfs -ra

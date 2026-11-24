@@ -156,6 +156,14 @@
       </li>
     </ul>
   </div>
+
+  <script>
+    document.querySelectorAll('.services a').forEach(link => {
+      if (link.hostname === 'home-pi.local') {
+        link.hostname = window.location.hostname;
+      }
+    });
+  </script>
 </body>
 
 </html>
